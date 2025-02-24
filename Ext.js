@@ -5,12 +5,12 @@
   "version": "1.0",
   "description": "Refreshes the current tab at chosen intervals.",
   "permissions": ["tabs", "scripting", "storage"],
+  "background": {
+    "service_worker": "background.js"
+  },
   "action": {
     "default_popup": "popup.html",
     "default_icon": "icon.png"
-  },
-  "background": {
-    "service_worker": "background.js"
   },
   "icons": {
     "16": "icon.png",
@@ -18,6 +18,27 @@
     "128": "icon.png"
   }
 }
+
+// background.js
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.storage.local.set({ activeTab: null, refreshInterval: null });
+});
+
+chrome.tabs.onRemoved.addListener((tabId) => {
+  chrome.storage.local.get(["activeTab"], (data) => {
+    if (data.activeTab === tabId) {
+      chrome.storage.local.set({ activeTab: null, refreshInterval: null });
+    }
+  });
+});
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === "start") {
+    chrome.storage.local.set({ activeTab: message.tabId, refreshInterval: message.interval });
+  } else if (message.action === "stop") {
+    chrome.storage.local.set({ activeTab: null, refreshInterval: null });
+  }
+});
 
 // popup.html
 <!DOCTYPE html>
@@ -42,6 +63,7 @@ document.getElementById("start").addEventListener("click", async () => {
   let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   let interval = document.querySelector('input[name="interval"]:checked').value;
   chrome.storage.local.set({ refreshTab: tab.id, refreshInterval: parseInt(interval) });
+  chrome.runtime.sendMessage({ action: "start", tabId: tab.id, interval: parseInt(interval) });
   chrome.scripting.executeScript({
     target: { tabId: tab.id },
     function: startRefreshing,
@@ -52,6 +74,7 @@ document.getElementById("start").addEventListener("click", async () => {
 document.getElementById("stop").addEventListener("click", async () => {
   let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   chrome.storage.local.remove("refreshTab");
+  chrome.runtime.sendMessage({ action: "stop" });
   chrome.scripting.executeScript({
     target: { tabId: tab.id },
     function: stopRefreshing
