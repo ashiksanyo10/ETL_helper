@@ -45,18 +45,65 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 <html>
 <head>
   <title>Auto Refresh</title>
+  <link rel="stylesheet" href="styles.css">
   <script src="popup.js" defer></script>
 </head>
 <body>
-  <h3>Choose Refresh Interval</h3>
-  <input type="radio" id="five" name="interval" value="5000" checked>
-  <label for="five">5 seconds</label><br>
-  <input type="radio" id="fifteen" name="interval" value="15000">
-  <label for="fifteen">15 seconds</label><br>
-  <button id="start">Start</button>
-  <button id="stop">Stop</button>
+  <div class="container">
+    <h3>Auto Refresh</h3>
+    <p>Choose Refresh Interval</p>
+    <div class="radio-group">
+      <input type="radio" id="five" name="interval" value="5000" checked>
+      <label for="five">5 seconds</label>
+      <input type="radio" id="fifteen" name="interval" value="15000">
+      <label for="fifteen">15 seconds</label>
+    </div>
+    <div class="button-group">
+      <button id="start">Start</button>
+      <button id="stop">Stop</button>
+    </div>
+  </div>
 </body>
 </html>
+
+// styles.css
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  width: 200px;
+  padding: 20px;
+  background-color: #f4f4f4;
+  border-radius: 10px;
+}
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.radio-group {
+  margin: 10px 0;
+}
+.button-group {
+  display: flex;
+  gap: 10px;
+}
+button {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+#start {
+  background-color: #28a745;
+  color: white;
+}
+#stop {
+  background-color: #dc3545;
+  color: white;
+}
+button:hover {
+  opacity: 0.8;
+}
 
 // popup.js
 document.getElementById("start").addEventListener("click", async () => {
